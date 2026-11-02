@@ -60,9 +60,11 @@ phone, without ever touching an email address or password.
   existing account (matching email or phone) is sent to sign in; otherwise the join page opens.
 - Join page for a phone invitation: heading *Join "Our new house"*, the number shown and locked,
   fields **Your name** and **Language**, button **Join**. No email, no password.
-- Holding the link (delivered to that WhatsApp/SMS number) counts as proof of the number: the
-  account is created with `phone_verified_at` set, the invitation is accepted, and the person is
-  signed in with "remember me", landing in the project.
+- **Join** sends a 6-digit code to the invited number (same rules as sign-in codes) and the page
+  asks for it. Only then is the account created with `phone_verified_at` set, the invitation
+  accepted, and the person signed in with "remember me", landing in the project.
+  (Changed after review: the link alone isn't proof – the inviter sees it too and could claim the
+  number.)
 - Email invitations keep today's sign-up form.
 - A used invitation can't be used again (as today).
 

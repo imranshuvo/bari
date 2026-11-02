@@ -149,6 +149,10 @@ class EditProfile extends BaseEditProfile
             return $data;
         }
 
+        if ($this->phoneCodeSentTo !== $phone) {
+            throw ValidationException::withMessages(['data.phone' => __('Tap "Send code" to confirm this number first.')]);
+        }
+
         if (! LoginCode::verifyCode($phone, (string) ($this->data['phone_code'] ?? ''), 'profile')) {
             throw ValidationException::withMessages(['data.phone_code' => __("That code isn't right, or it has expired.")]);
         }

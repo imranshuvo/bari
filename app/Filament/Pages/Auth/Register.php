@@ -4,6 +4,8 @@ namespace App\Filament\Pages\Auth;
 
 use App\Models\Invitation;
 use App\Models\User;
+use App\Support\LoginCode;
+use App\Support\PhoneMessenger;
 use App\Support\PhoneNumber;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Actions\Action;
@@ -17,6 +19,7 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use SensitiveParameter;
 
@@ -28,6 +31,10 @@ class Register extends BaseRegister
 {
     #[Locked]
     public ?string $invitationToken = null;
+
+    /** Phone invitations: a code went to the invited number, and the form now asks for it. */
+    #[Locked]
+    public bool $joinCodeSent = false;
 
     public function mount(): void
     {
@@ -59,7 +66,8 @@ class Register extends BaseRegister
             return parent::form($schema);
         }
 
-        // Invited by phone: the link came to their WhatsApp, so a name is all we need.
+        // Invited by phone: a name, a language, and the code sent to that number.
+        // (Anyone can forward the link – the code proves the phone is theirs.)
         return $schema->components([
             $this->getNameFormComponent()->label(__('Your name'))->autofocus(),
             ToggleButtons::make('locale')
@@ -67,6 +75,15 @@ class Register extends BaseRegister
                 ->options(User::LOCALES)
                 ->inline()
                 ->required(),
+            TextInput::make('code')
+                ->label(__('Code from WhatsApp'))
+                ->placeholder('123456')
+                ->maxLength(12)
+                ->autocomplete('one-time-code')
+                ->extraInputAttributes(['inputmode' => 'numeric'])
+                ->required()
+                ->dehydrated(false)
+                ->visible(fn () => $this->joinCodeSent),
         ]);
     }
 
@@ -123,6 +140,21 @@ class Register extends BaseRegister
             return null;
         }
 
+        if (! $this->joinCodeSent) {
+            if (! PhoneMessenger::isAvailable()) {
+                throw ValidationException::withMessages(['data.name' => __("We can't send a code to your number right now. Ask the person who invited you to try again later.")]);
+            }
+
+            LoginCode::send($invitation->phone, request()->ip(), 'join');
+            $this->joinCodeSent = true;
+
+            return null;
+        }
+
+        if (! LoginCode::verifyCode($invitation->phone, (string) ($this->data['code'] ?? ''), 'join')) {
+            throw ValidationException::withMessages(['data.code' => __("That code isn't right, or it has expired.")]);
+        }
+
         // Creating the user accepts their pending invitations (see AppServiceProvider).
         $user = DB::transaction(function () use ($data, $invitation) {
             $user = new User([
@@ -150,7 +182,9 @@ class Register extends BaseRegister
         $invitation = $this->invitation();
 
         if ($invitation?->phone) {
-            return __('You were invited with :phone', ['phone' => PhoneNumber::mask($invitation->phone)]);
+            return $this->joinCodeSent
+                ? __('We sent a code to :phone on WhatsApp.', ['phone' => PhoneNumber::mask($invitation->phone)])
+                : __('You were invited with :phone', ['phone' => PhoneNumber::mask($invitation->phone)]);
         }
 
         return $invitation

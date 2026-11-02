@@ -13,6 +13,13 @@ class PhoneNumberTest extends TestCase
         $this->assertSame('+8801712345678', PhoneNumber::normalize('০১৭১২৩৪৫৬৭৮'));
         $this->assertSame('+8801712345678', PhoneNumber::normalize('008801712345678'));
         $this->assertSame('+8801712345678', PhoneNumber::normalize('+880 1712 345678'));
+        $this->assertSame('+8801712345678', PhoneNumber::normalize('+880 01712-345678'));
+        $this->assertSame('+8801712345678', PhoneNumber::normalize('0088001712345678'));
+    }
+
+    public function test_bangla_digits_become_ascii(): void
+    {
+        $this->assertSame('482913', PhoneNumber::asciiDigits('৪৮২৯১৩'));
     }
 
     public function test_the_country_code_comes_from_config(): void

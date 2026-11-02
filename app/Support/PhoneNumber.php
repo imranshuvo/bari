@@ -15,10 +15,17 @@ class PhoneNumber
         $value = self::clean($input);
         $digits = preg_replace('/\D/', '', $value);
 
+        $code = self::countryCode();
+
         if (str_starts_with($value, '00')) {
             $digits = substr($digits, 2);
         } elseif (str_starts_with($value, '0')) {
-            $digits = self::countryCode().substr($digits, 1);
+            $digits = $code.substr($digits, 1);
+        }
+
+        // "+880 01712…": the local 0 written after the default country code.
+        if (str_starts_with($digits, $code.'0')) {
+            $digits = $code.substr($digits, strlen($code) + 1);
         }
 
         return '+'.$digits;
@@ -63,9 +70,15 @@ class PhoneNumber
         return ltrim(self::normalize($phone), '+');
     }
 
+    /** Bangla digits (০–৯) → 0–9, everything else unchanged. */
+    public static function asciiDigits(string $input): string
+    {
+        return strtr($input, self::BANGLA_DIGITS);
+    }
+
     private static function clean(?string $input): string
     {
-        return strtr(trim((string) $input), self::BANGLA_DIGITS);
+        return self::asciiDigits(trim((string) $input));
     }
 
     private static function countryCode(): string

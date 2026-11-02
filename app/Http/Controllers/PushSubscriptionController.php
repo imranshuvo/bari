@@ -28,6 +28,9 @@ class PushSubscriptionController
             ],
         );
 
+        // Remembered so signing out can stop notifications on this device.
+        $request->session()->put('push_endpoint', $data['endpoint']);
+
         return response()->noContent();
     }
 

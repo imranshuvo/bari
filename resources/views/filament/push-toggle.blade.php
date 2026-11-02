@@ -45,7 +45,14 @@
             root.classList.add('bari-push-supported');
             const registration = await navigator.serviceWorker.ready;
             const subscription = await registration.pushManager.getSubscription();
-            root.classList.toggle('bari-push-subscribed', Boolean(subscription) && Notification.permission === 'granted');
+            const on = Boolean(subscription) && Notification.permission === 'granted';
+            root.classList.toggle('bari-push-subscribed', on);
+
+            // Once per page load: tell the server this device now belongs to whoever is signed in.
+            if (on && ! bari.pushClaimed) {
+                bari.pushClaimed = true;
+                send('POST', subscription.toJSON()).catch(() => {});
+            }
         };
 
         bari.push = {

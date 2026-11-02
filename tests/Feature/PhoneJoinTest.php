@@ -8,6 +8,8 @@ use App\Models\Invitation;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -22,6 +24,10 @@ class PhoneJoinTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->withoutDefer();
+        config(['services.waha.url' => 'http://waha.test', 'services.sms_gate.username' => null]);
+        Http::fake(['waha.test/*' => Http::response(['id' => 'ok'])]);
 
         $this->project = Project::factory()->create(['name' => 'Our new house']);
         $this->invitation = $this->project->invitations()->create(['phone' => '01712345678', 'role' => ProjectRole::Editor, 'locale' => 'bn']);
@@ -38,12 +44,29 @@ class PhoneJoinTest extends TestCase
             ->assertDontSee('Confirm password');
     }
 
-    public function test_joining_creates_a_phone_account_and_signs_in(): void
+    private function sentCode(): string
     {
-        Livewire::withQueryParams(['invitation' => $this->invitation->token])
+        $text = collect(Http::recorded())->map(fn (array $pair) => $pair[0]['text'] ?? '')->filter()->last();
+        preg_match('/(\d{6})/', (string) $text, $match);
+
+        return $match[1] ?? '';
+    }
+
+    public function test_joining_needs_the_code_sent_to_the_number_then_signs_in(): void
+    {
+        $page = Livewire::withQueryParams(['invitation' => $this->invitation->token])
             ->test(Register::class)
             ->assertSet('data.locale', 'bn')
             ->fillForm(['name' => 'Rina', 'locale' => 'bn'])
+            ->call('register')
+            ->assertHasNoFormErrors()
+            ->assertSet('joinCodeSent', true);
+
+        $this->assertSame(0, User::count());
+        $this->assertGuest();
+        Http::assertSent(fn (Request $r) => $r['chatId'] === '8801712345678@c.us');
+
+        $page->fillForm(['name' => 'Rina', 'locale' => 'bn', 'code' => $this->sentCode()])
             ->call('register')
             ->assertHasNoFormErrors()
             ->assertRedirect(filament()->getPanel('app')->getUrl($this->project));
@@ -58,6 +81,32 @@ class PhoneJoinTest extends TestCase
         $this->assertSame(ProjectRole::Editor, $this->project->roleOf($rina));
         $this->assertNotNull($this->invitation->fresh()->accepted_at);
         $this->assertAuthenticatedAs($rina);
+    }
+
+    public function test_someone_holding_the_link_without_the_phone_cannot_join(): void
+    {
+        Livewire::withQueryParams(['invitation' => $this->invitation->token])
+            ->test(Register::class)
+            ->fillForm(['name' => 'Not Rina', 'locale' => 'en'])
+            ->call('register')
+            ->fillForm(['name' => 'Not Rina', 'locale' => 'en', 'code' => '000000'])
+            ->call('register')
+            ->assertHasFormErrors(['code']);
+
+        $this->assertSame(0, User::count());
+        $this->assertGuest();
+    }
+
+    public function test_joining_says_so_when_no_code_can_be_sent(): void
+    {
+        config(['services.waha.url' => null]);
+
+        Livewire::withQueryParams(['invitation' => $this->invitation->token])
+            ->test(Register::class)
+            ->fillForm(['name' => 'Rina', 'locale' => 'bn'])
+            ->call('register')
+            ->assertHasFormErrors(['name'])
+            ->assertSet('joinCodeSent', false);
     }
 
     public function test_a_name_is_required(): void

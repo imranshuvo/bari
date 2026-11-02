@@ -135,4 +135,16 @@ class ProfilePhoneTest extends TestCase
     {
         $this->actingAs(User::factory()->create())->get('/profile')->assertRedirect(Filament::getPanel('app')->getTenantRegistrationUrl());
     }
+
+    public function test_saving_a_new_number_without_a_code_says_what_to_do(): void
+    {
+        $user = $this->signIn(User::factory()->create());
+
+        Livewire::test(EditProfile::class)
+            ->fillForm(['phone' => '01712345678'])
+            ->call('save')
+            ->assertHasFormErrors(['phone']);
+
+        $this->assertNull($user->fresh()->phone);
+    }
 }

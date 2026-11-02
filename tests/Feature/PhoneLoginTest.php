@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Filament\Pages\Auth\Login;
 use App\Models\User;
+use App\Support\LoginCode;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -159,5 +161,43 @@ class PhoneLoginTest extends TestCase
             ->assertHasFormErrors(['login']);
 
         $this->assertGuest();
+    }
+
+    public function test_a_code_typed_in_bangla_digits_works(): void
+    {
+        $page = $this->askForCode();
+        $bangla = strtr($this->sentCode(), ['0' => '০', '1' => '১', '2' => '২', '3' => '৩', '4' => '৪', '5' => '৫', '6' => '৬', '7' => '৭', '8' => '৮', '9' => '৯']);
+
+        $page->fillForm(['code' => $bangla])->call('authenticate')->assertHasNoFormErrors();
+
+        $this->assertAuthenticatedAs($this->rina);
+    }
+
+    public function test_the_password_box_is_never_required_by_the_browser(): void
+    {
+        Livewire::test(Login::class)
+            ->assertFormFieldExists('password', fn (TextInput $field) => ! $field->isRequired());
+    }
+
+    public function test_an_email_without_a_password_is_refused(): void
+    {
+        User::factory()->create(['email' => 'imran@example.com']);
+
+        Livewire::test(Login::class)
+            ->fillForm(['login' => 'imran@example.com'])
+            ->call('authenticate')
+            ->assertHasFormErrors(['password']);
+
+        $this->assertGuest();
+    }
+
+    public function test_no_more_than_ten_codes_a_day_per_number(): void
+    {
+        foreach (range(1, 12) as $i) {
+            LoginCode::send('+8801712345678');
+            $this->travel(13)->minutes();
+        }
+
+        Http::assertSentCount(10);
     }
 }

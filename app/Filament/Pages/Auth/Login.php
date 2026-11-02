@@ -43,7 +43,12 @@ class Login extends BaseLogin
                 ->autofocus()
                 ->live(onBlur: true)
                 ->hidden(fn () => filled($this->codeSentTo)),
-            $this->getPasswordFormComponent()->visible($usesPassword),
+            // Required on the server only: the browser must not block "phone number + Enter"
+            // before the field has had a chance to hide itself.
+            $this->getPasswordFormComponent()
+                ->required(false)
+                ->rule('required', fn (Get $get): bool => ! $this->isPhone($get('login')))
+                ->visible($usesPassword),
             $this->getRememberFormComponent()->visible($usesPassword),
             TextInput::make('code')
                 ->label(__('Code'))

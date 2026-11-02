@@ -154,8 +154,9 @@ database and things look wrong, restore last night's backup (Part 3).
 **Inviting** (in the app, as an Owner): **Team → Invite someone** → type their **email or
 WhatsApp number** (`01712345678` works; other countries need `+` and the country code).
 
-- **By number:** they get a WhatsApp message with a link (SMS if WhatsApp fails), tap it, type
-  their name and they're in – no email or password. Pick their language, and tick **Also send
+- **By number:** they get a WhatsApp message with a link (SMS if WhatsApp fails). They tap it,
+  type their name, then the 6-digit code that arrives in the same chat – and they're in. No email
+  or password. (The code makes sure only the phone's owner can use the link.) Pick their language, and tick **Also send
   them cost updates on WhatsApp** to add them to the Notifications list at the same time.
 - **By email:** they get an email with a link and create a password.
 - If nothing could be sent, the window says so – press **Get link** and send it yourself.

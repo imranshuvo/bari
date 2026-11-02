@@ -10,7 +10,8 @@ use function Illuminate\Support\defer;
 
 /**
  * Six-digit codes sent by WhatsApp (SMS as backup) to sign in or to confirm a phone number.
- * Codes last 10 minutes and allow 5 tries. Sending is limited per number and per IP address.
+ * Codes last 10 minutes and allow 5 tries. Sending is limited per number (1/minute, 5/hour,
+ * 10/day) and per IP address (20/hour).
  */
 class LoginCode
 {
@@ -40,9 +41,9 @@ class LoginCode
 
         Cache::put(self::key($phone, $purpose), [
             'hash' => self::hash($code),
-            'tries' => 0,
             'expires_at' => now()->addSeconds(self::LIFETIME)->getTimestamp(),
         ], self::LIFETIME);
+        Cache::put(self::key($phone, $purpose).':tries', 0, self::LIFETIME);
 
         $text = __('Your Bari code is :code. It expires in 10 minutes.', ['code' => $code], $user?->locale ?? app()->getLocale());
 
@@ -60,19 +61,27 @@ class LoginCode
             return false;
         }
 
-        if (hash_equals($entry['hash'], self::hash(preg_replace('/\D/', '', $code)))) {
+        // Counted atomically, so parallel guesses can't share one try.
+        $tries = Cache::increment($key.':tries');
+
+        if ($tries > self::MAX_TRIES) {
             Cache::forget($key);
 
-            return true;
+            return false;
         }
 
-        $entry['tries']++;
+        if (! hash_equals($entry['hash'], self::hash(preg_replace('/\D/', '', PhoneNumber::asciiDigits($code))))) {
+            if ($tries >= self::MAX_TRIES) {
+                Cache::forget($key);
+            }
 
-        $entry['tries'] >= self::MAX_TRIES
-            ? Cache::forget($key)
-            : Cache::put($key, $entry, $entry['expires_at'] - now()->getTimestamp());
+            return false;
+        }
 
-        return false;
+        Cache::forget($key);
+        Cache::forget($key.':tries');
+
+        return true;
     }
 
     /** The account for this number, if the code is right. */
@@ -93,6 +102,7 @@ class LoginCode
         $limits = [
             "login-code-minute:{$purpose}:{$phone}" => [1, 60],
             "login-code-hour:{$purpose}:{$phone}" => [5, 3600],
+            "login-code-day:{$purpose}:{$phone}" => [10, 86400],
         ];
 
         if ($ip) {

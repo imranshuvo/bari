@@ -12,6 +12,7 @@ use App\Notifications\Channels\WebPushChannel;
 use App\Notifications\CostChanged;
 use App\Services\PushService;
 use App\Support\VapidKeys;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -158,5 +159,27 @@ class WebPushTest extends TestCase
         config(['services.webpush.public_key' => 'env-public', 'services.webpush.private_key' => 'env-private']);
         VapidKeys::forget();
         $this->assertSame(['publicKey' => 'env-public', 'privateKey' => 'env-private'], VapidKeys::get());
+    }
+
+    public function test_a_shared_device_moves_to_whoever_signs_in(): void
+    {
+        $body = ['endpoint' => 'https://push.example.com/family-phone', 'keys' => ['p256dh' => 'p', 'auth' => 'a']];
+        $imran = $this->member();
+        $rina = $this->member();
+
+        $this->actingAs($imran)->postJson('/push-subscriptions', $body)->assertNoContent();
+        $this->actingAs($rina)->postJson('/push-subscriptions', $body)->assertNoContent();
+
+        $this->assertTrue(PushSubscription::sole()->user->is($rina));
+    }
+
+    public function test_signing_out_stops_notifications_on_that_device(): void
+    {
+        $rina = $this->member();
+
+        $this->actingAs($rina)->postJson('/push-subscriptions', ['endpoint' => 'https://push.example.com/rina', 'keys' => ['p256dh' => 'p', 'auth' => 'a']]);
+        $this->actingAs($rina)->post(Filament::getPanel('app')->getLogoutUrl());
+
+        $this->assertSame(0, PushSubscription::count());
     }
 }
