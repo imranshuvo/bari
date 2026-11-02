@@ -32,7 +32,7 @@ class InvitationController
         $panel = Filament::getPanel('app');
 
         if (! $request->user()) {
-            if (User::whereRaw('lower(email) = ?', [$invitation->email])->exists()) {
+            if (User::findByLogin($invitation->contact())) {
                 return redirect()->guest($panel->getLoginUrl());
             }
 
