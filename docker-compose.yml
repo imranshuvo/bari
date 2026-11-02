@@ -17,7 +17,7 @@ services:
     environment:
       # Coolify creates the domain for this service (port 8080) and keeps APP_URL in step with it.
       SERVICE_URL_APP_8080: /
-      APP_NAME: "House Cost Planner"
+      APP_NAME: Bari
       APP_ENV: production
       APP_DEBUG: "false"
       APP_KEY: base64:${SERVICE_REALBASE64_32_APPKEY}
@@ -43,7 +43,7 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-bari@imrankhanshuvo.com}
-      MAIL_FROM_NAME: "House Cost Planner"
+      MAIL_FROM_NAME: Bari
 
       WAHA_URL: http://waha:3000
       WAHA_API_KEY: ${SERVICE_PASSWORD_WAHAKEY}
@@ -63,7 +63,7 @@ services:
     command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3", "--sleep=3", "--max-time=3600"]
     environment:
       AUTORUN_ENABLED: "false"
-      APP_NAME: "House Cost Planner"
+      APP_NAME: Bari
       APP_ENV: production
       APP_DEBUG: "false"
       APP_KEY: base64:${SERVICE_REALBASE64_32_APPKEY}
@@ -89,7 +89,7 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-bari@imrankhanshuvo.com}
-      MAIL_FROM_NAME: "House Cost Planner"
+      MAIL_FROM_NAME: Bari
 
       WAHA_URL: http://waha:3000
       WAHA_API_KEY: ${SERVICE_PASSWORD_WAHAKEY}

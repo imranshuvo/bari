@@ -409,3 +409,44 @@ body,
         display: none;
     }
 }
+
+/* iPhone "Add to Home Screen" tip (resources/views/filament/pwa-install.blade.php) */
+[x-cloak] {
+    display: none !important;
+}
+
+.hcp-ios-tip {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-bottom: 1.25rem;
+    padding: 0.875rem 1rem;
+    border-radius: 1rem;
+    background: rgb(16 185 129 / 0.08);
+    border: 1px solid rgb(16 185 129 / 0.25);
+}
+
+.hcp-ios-tip-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: none;
+    border-radius: 0.75rem;
+}
+
+.hcp-ios-tip-text {
+    flex: 1;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--color-gray-700);
+}
+
+.dark .hcp-ios-tip-text {
+    color: var(--color-gray-200);
+}
+
+.hcp-ios-tip-close {
+    flex: none;
+    padding: 0.375rem;
+    border-radius: 0.5rem;
+    color: var(--color-gray-500);
+}

@@ -56,7 +56,7 @@ class AppPanelProvider extends PanelProvider
             ->default()
             ->id('app')
             ->path('')
-            ->brandName(fn () => __('House Cost Planner'))
+            ->brandName('Bari')
             ->login(Login::class)
             ->registration(Register::class)
             ->passwordReset()
@@ -86,11 +86,22 @@ class AppPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
             ->userMenuItems([
+                'install' => fn (): Action => Action::make('installApp')
+                    ->label(__('Install app'))
+                    ->icon(Heroicon::OutlinedDevicePhoneMobile)
+                    ->extraAttributes(['class' => 'bari-install-item'])
+                    ->alpineClickHandler('window.bari.install()'),
                 'language' => fn (): Action => Action::make('language')
                     ->label(app()->getLocale() === 'bn' ? 'English' : 'বাংলা')
                     ->icon(Heroicon::OutlinedLanguage)
                     ->url(route('locale', app()->getLocale() === 'bn' ? 'en' : 'bn')),
             ])
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('filament.pwa-head'))
+            ->renderHook(
+                PanelsRenderHook::CONTENT_START,
+                fn () => view('filament.pwa-install'),
+                scopes: [Dashboard::class],
+            )
             ->renderHook(
                 PanelsRenderHook::TOPBAR_END,
                 fn () => filament()->getTenant() ? Blade::render('@livewire(\App\Livewire\AddCostButton::class)') : '',
