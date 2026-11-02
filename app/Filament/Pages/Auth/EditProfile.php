@@ -8,6 +8,7 @@ use App\Support\PhoneMessenger;
 use App\Support\PhoneNumber;
 use Filament\Actions\Action;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Component;
@@ -29,6 +30,28 @@ class EditProfile extends BaseEditProfile
     /** The new number a confirmation code was sent to. */
     #[Locked]
     public ?string $phoneCodeSentTo = null;
+
+    /**
+     * /profile has no project in its address, but the layout draws the project menu,
+     * so use the person's current project (Filament errors without one).
+     */
+    public function boot(): void
+    {
+        if (! Filament::getTenant() && ($project = $this->getUser()->getDefaultTenant(Filament::getCurrentOrDefaultPanel()))) {
+            Filament::setTenant($project, isQuiet: true);
+        }
+    }
+
+    public function mount(): void
+    {
+        if (! Filament::getTenant()) {
+            $this->redirect(Filament::getCurrentOrDefaultPanel()->getTenantRegistrationUrl());
+
+            return;
+        }
+
+        parent::mount();
+    }
 
     public function form(Schema $schema): Schema
     {

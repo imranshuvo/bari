@@ -53,6 +53,8 @@ class Login extends BaseLogin
                 ->autocomplete('one-time-code')
                 ->extraInputAttributes(['inputmode' => 'numeric', 'pattern' => '[0-9]*'])
                 ->autofocus()
+                ->hintAction(Action::make('resend')->label(__('Send a new code'))->action(fn () => $this->resendCode()))
+                ->belowContent(Action::make('changeNumber')->label(__('Use a different number'))->link()->color('gray')->action(fn () => $this->useDifferentNumber()))
                 ->visible(fn () => filled($this->codeSentTo)),
         ]);
     }
@@ -108,19 +110,6 @@ class Login extends BaseLogin
         }
 
         return parent::getSubheading();
-    }
-
-    protected function getFormActions(): array
-    {
-        if (blank($this->codeSentTo)) {
-            return [$this->getAuthenticateFormAction()];
-        }
-
-        return [
-            $this->getAuthenticateFormAction(),
-            Action::make('resend')->label(__('Send a new code'))->link()->action(fn () => $this->resendCode()),
-            Action::make('changeNumber')->label(__('Use a different number'))->link()->color('gray')->action(fn () => $this->useDifferentNumber()),
-        ];
     }
 
     protected function getAuthenticateFormAction(): Action
