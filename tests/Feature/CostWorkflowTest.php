@@ -224,7 +224,7 @@ class CostWorkflowTest extends TestCase
         $this->as(ProjectRole::Owner);
 
         Livewire::test(ManageMemberships::class)
-            ->callAction('invite', data: ['email' => 'Builder@Example.com', 'role' => 'editor'])
+            ->callAction('invite', data: ['contact' => 'Builder@Example.com', 'role' => 'editor'])
             ->assertHasNoActionErrors();
 
         $invitation = Invitation::sole();
@@ -253,7 +253,7 @@ class CostWorkflowTest extends TestCase
         $existing = User::factory()->create(['email' => 'bank@example.com']);
 
         Livewire::test(ManageMemberships::class)
-            ->callAction('invite', data: ['email' => 'bank@example.com', 'role' => 'viewer'])
+            ->callAction('invite', data: ['contact' => 'bank@example.com', 'role' => 'viewer'])
             ->assertHasNoActionErrors();
 
         $this->assertSame(ProjectRole::Viewer, $this->project->fresh()->roleOf($existing));

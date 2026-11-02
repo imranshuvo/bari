@@ -40,7 +40,7 @@ class PendingInvitations extends TableWidget
             ->query(fn () => Invitation::query()->whereBelongsTo(static::project())->pending()->latest())
             ->paginated(false)
             ->columns([
-                TextColumn::make('email')->label(__('Email'))->weight('medium'),
+                TextColumn::make('contact')->label(__('Email or phone'))->state(fn (Invitation $record) => $record->contact())->weight('medium'),
                 TextColumn::make('role')->label(__('Role'))->badge(),
                 TextColumn::make('created_at')->label(__('Invited'))->since()->color('gray'),
             ])
