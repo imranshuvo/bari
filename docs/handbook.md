@@ -68,6 +68,9 @@ You can turn the orange cloud on later with SSL mode **Full (strict)**.
    Keep the `:8080` / `:3000`: it tells Coolify which port inside the container to use. People
    still open the normal address. The app's own address (`APP_URL`, used in links in messages)
    follows whatever domain is set here.
+
+   **After changing a domain, press Redeploy.** Coolify only applies domains when it creates the
+   containers; until then the address shows "no available server".
 5. **Environment variables** – fill in only what you use:
 
    | Variable | Value |
@@ -299,7 +302,7 @@ Start with the **Logs** of the service involved (Coolify → the stack → the s
 | Problem | What to do |
 |---|---|
 | No domains appear after creating the stack | The server has no wildcard domain in Coolify (Servers → your server → Wildcard Domain). Set one, or type the two domains in by hand (1.2) |
-| Site shows "No available server" | The domain is missing `:8080` / `:3000` (1.2), or **app** isn't healthy yet – check its logs |
+| Site shows "No available server" | A domain was changed without redeploying – press **Redeploy**. Otherwise the domain is missing `:8080` / `:3000` (1.2), or **app** isn't healthy yet – check its logs |
 | Site shows a 500 error | Logs of **app**. Usually a database problem: is **db** running? |
 | Deploy failed | The deployment log in Coolify. Fix, push, redeploy – if the build failed, the old version is still running |
 | Test message works, real messages don't arrive | Logs of **worker**; `php artisan queue:failed` (2.4) |
