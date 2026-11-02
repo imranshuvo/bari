@@ -33,6 +33,18 @@ class UserFactory extends Factory
         ];
     }
 
+    /** Joined with a phone number only: no email, no password. */
+    public function phoneOnly(string $phone = '+8801712345678'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email' => null,
+            'email_verified_at' => null,
+            'password' => null,
+            'phone' => $phone,
+            'phone_verified_at' => now(),
+        ]);
+    }
+
     /**
      * Indicate that the model's email address should be unverified.
      */

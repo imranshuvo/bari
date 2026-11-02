@@ -81,7 +81,7 @@ class EditProject extends EditTenantProfile
                     TextInput::make('address')
                         ->label(fn (Get $get) => self::isEmail($get) ? __('Email') : __('Phone number'))
                         ->placeholder(fn (Get $get) => self::isEmail($get) ? 'name@example.com' : '+8801712345678')
-                        ->helperText(fn (Get $get) => self::isEmail($get) ? null : __('With country code, e.g. +880 for Bangladesh.'))
+                        ->helperText(fn (Get $get) => self::isEmail($get) ? null : __('e.g. 01712345678. Numbers outside Bangladesh need the country code, e.g. +44….'))
                         ->type(fn (Get $get) => self::isEmail($get) ? 'email' : 'tel')
                         ->required()
                         ->maxLength(255)
@@ -182,7 +182,7 @@ class EditProject extends EditTenantProfile
     {
         return function (string $attribute, mixed $value, Closure $fail) {
             if (! PhoneNumber::isValid($value)) {
-                $fail(__('Write the number with country code, e.g. +8801712345678.'));
+                $fail(__('That doesn\'t look like a phone number. Example: 01712345678 or +8801712345678.'));
             }
         };
     }

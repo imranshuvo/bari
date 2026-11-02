@@ -214,7 +214,7 @@ class CostNotificationsTest extends TestCase
 
         Livewire::test(EditProject::class)
             ->set('data.notificationRecipients', [
-                'a' => ['channel' => 'whatsapp', 'address' => '01712345678', 'name' => 'Mum', 'locale' => 'bn'],
+                'a' => ['channel' => 'whatsapp', 'address' => '1712345678', 'name' => 'Mum', 'locale' => 'bn'],
             ])
             ->call('save')
             ->assertHasErrors(['data.notificationRecipients.a.address']);

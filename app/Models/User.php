@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PhoneNumber;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasDefaultTenant;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements FilamentUser, HasDefaultTenant, HasTenants
 {
@@ -21,7 +23,7 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
 
     public const LOCALES = ['en' => 'English', 'bn' => 'বাংলা'];
 
-    protected $fillable = ['name', 'email', 'password', 'locale'];
+    protected $fillable = ['name', 'email', 'phone', 'password', 'locale'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -29,8 +31,38 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            $user->email = filled($user->email) ? Str::lower(trim($user->email)) : null;
+            $user->phone = filled($user->phone) ? PhoneNumber::normalize($user->phone) : null;
+        });
+    }
+
+    /** Finds an account by email (any case) or phone number (any format). */
+    public static function findByLogin(?string $login): ?self
+    {
+        $login = trim((string) $login);
+
+        if ($login === '') {
+            return null;
+        }
+
+        if (! PhoneNumber::looksLikePhone($login)) {
+            return static::where('email', Str::lower($login))->first();
+        }
+
+        return PhoneNumber::isValid($login) ? static::where('phone', PhoneNumber::normalize($login))->first() : null;
+    }
+
+    public function hasPassword(): bool
+    {
+        return filled($this->getAuthPassword());
     }
 
     public function projects(): BelongsToMany

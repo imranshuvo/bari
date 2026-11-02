@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\ProjectRole;
 use App\Models\Project;
 use App\Models\User;
+use App\Support\PhoneNumber;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -19,6 +20,7 @@ class CreateUser extends Command
     protected $signature = 'user:create
         {--name= : Their name}
         {--email= : Their email address}
+        {--phone= : Their phone number (they sign in with a code on WhatsApp)}
         {--password= : Leave out to type it, or use "random"}
         {--project= : Project name or id to add them to}
         {--role=editor : owner, editor or viewer}
@@ -29,12 +31,27 @@ class CreateUser extends Command
     public function handle(): int
     {
         $name = $this->option('name') ?: text('Name', required: true);
-        $email = Str::lower(trim($this->option('email') ?: text('Email', required: true)));
+        [$email, $phone] = $this->contact();
 
-        $validator = Validator::make(['email' => $email], ['email' => ['email', 'unique:users,email']]);
+        if ($email === null && $phone === null) {
+            $this->components->error('Give an email (--email) or a phone number (--phone).');
+
+            return self::FAILURE;
+        }
+
+        $validator = Validator::make(['email' => $email, 'phone' => $phone], [
+            'email' => ['nullable', 'email', 'unique:users,email'],
+            'phone' => ['nullable', 'unique:users,phone'],
+        ]);
+
+        if ($phone !== null && ! PhoneNumber::isValid($this->option('phone') ?: $phone)) {
+            $this->components->error('That phone number is not valid. Use the country code, e.g. +8801712345678, or 01712345678.');
+
+            return self::FAILURE;
+        }
 
         if ($validator->fails()) {
-            $this->components->error($validator->errors()->first('email'));
+            $this->components->error($validator->errors()->first());
 
             return self::FAILURE;
         }
@@ -60,17 +77,21 @@ class CreateUser extends Command
         $user = User::create([
             'name' => $name,
             'email' => $email,
+            'phone' => $phone,
             'password' => Hash::make($plain),
             'locale' => array_key_exists((string) $this->option('locale'), User::LOCALES) ? $this->option('locale') : 'en',
         ]);
 
-        $user->forceFill(['email_verified_at' => now()])->save();
+        $user->forceFill([
+            'email_verified_at' => $email ? now() : null,
+            'phone_verified_at' => $phone ? now() : null,
+        ])->save();
 
         if ($project && ! $project->roleOf($user)) {
             $project->addMember($user, $role);
         }
 
-        $this->components->info("Created {$user->email}".($project ? " ({$role->value} in {$project->name})" : ''));
+        $this->components->info('Created '.($user->email ?? $user->phone).($project ? " ({$role->value} in {$project->name})" : ''));
 
         if ($generated) {
             $this->components->twoColumnDetail('Password', $plain);
@@ -79,6 +100,23 @@ class CreateUser extends Command
         $this->components->twoColumnDetail('Sign in at', url('/login'));
 
         return self::SUCCESS;
+    }
+
+    /** @return array{0: ?string, 1: ?string} [email, phone] */
+    private function contact(): array
+    {
+        $email = $this->option('email');
+        $phone = $this->option('phone');
+
+        if (! $email && ! $phone && $this->input->isInteractive()) {
+            $email = text('Email (leave empty to use a phone number instead)');
+            $phone = $email ? null : text('Phone number', placeholder: '01712345678', required: true);
+        }
+
+        return [
+            filled($email) ? Str::lower(trim($email)) : null,
+            filled($phone) ? PhoneNumber::normalize($phone) : null,
+        ];
     }
 
     /** null = no project, false = not found. */

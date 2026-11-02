@@ -134,4 +134,37 @@ class SignUpTest extends TestCase
         $this->artisan('user:password', ['email' => 'nobody@example.com', '--password' => 'x'])
             ->assertFailed();
     }
+
+    public function test_local_and_international_formats_match_the_same_user(): void
+    {
+        $user = User::factory()->create(['email' => 'Rina@Example.com', 'phone' => '01712-345678']);
+
+        $this->assertSame('+8801712345678', $user->fresh()->phone);
+        $this->assertSame('rina@example.com', $user->fresh()->email);
+
+        foreach (['01712-345678', '+880 1712 345678', '০১৭১২৩৪৫৬৭৮', '008801712345678', 'RINA@example.com '] as $login) {
+            $this->assertTrue($user->is(User::findByLogin($login)), "Not found by {$login}");
+        }
+
+        $this->assertNull(User::findByLogin('01800000000'));
+        $this->assertNull(User::findByLogin(''));
+    }
+
+    public function test_the_command_creates_a_phone_only_user(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['name' => 'Our new house']);
+        $project->addMember($owner, ProjectRole::Owner);
+
+        $this->artisan('user:create', ['--name' => 'Rina', '--phone' => '01712345678', '--project' => 'Our new house', '--role' => 'editor', '--password' => 'random'])
+            ->assertSuccessful();
+
+        $rina = User::where('phone', '+8801712345678')->firstOrFail();
+        $this->assertNull($rina->email);
+        $this->assertNotNull($rina->phone_verified_at);
+        $this->assertSame(ProjectRole::Editor, $project->roleOf($rina));
+
+        $this->artisan('user:create', ['--name' => 'Nobody', '--password' => 'random', '--no-interaction' => true])
+            ->assertFailed();
+    }
 }

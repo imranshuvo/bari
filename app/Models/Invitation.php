@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ProjectRole;
+use App\Support\PhoneNumber;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -11,7 +12,7 @@ class Invitation extends Model
 {
     protected $table = 'project_invitations';
 
-    protected $fillable = ['project_id', 'email', 'role', 'token', 'invited_by', 'accepted_at'];
+    protected $fillable = ['project_id', 'email', 'phone', 'role', 'locale', 'token', 'invited_by', 'accepted_at'];
 
     protected function casts(): array
     {
@@ -25,7 +26,8 @@ class Invitation extends Model
     {
         static::creating(function (Invitation $invitation) {
             $invitation->token ??= Str::random(48);
-            $invitation->email = Str::lower(trim($invitation->email));
+            $invitation->email = filled($invitation->email) ? Str::lower(trim($invitation->email)) : null;
+            $invitation->phone = filled($invitation->phone) ? PhoneNumber::normalize($invitation->phone) : null;
         });
     }
 
@@ -42,6 +44,12 @@ class Invitation extends Model
     public function scopePending($query)
     {
         return $query->whereNull('accepted_at');
+    }
+
+    /** The email or phone number the invitation was sent to. */
+    public function contact(): string
+    {
+        return $this->phone ?? $this->email;
     }
 
     public function url(): string
