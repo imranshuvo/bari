@@ -40,15 +40,17 @@ Data is kept in four volumes that survive redeploys:
 
 ### 1.1 DNS
 
-At the DNS provider for imrankhanshuvo.com, add two **A records** pointing at your Coolify
-server's IP address:
+If imrankhanshuvo.com already has a **wildcard record** (`*` → your Coolify server's IP), as most
+Coolify setups do, there is nothing to do here.
+
+If not, add two **A records** pointing at the server's IP address:
 
 | Name | Type | Value |
 |---|---|---|
 | `bari` | A | server IP |
 | `waha` | A | server IP |
 
-On Cloudflare, set both to **DNS only** (grey cloud) so Coolify can get the HTTPS certificates.
+On Cloudflare, set them to **DNS only** (grey cloud) so Coolify can get the HTTPS certificates.
 You can turn the orange cloud on later with SSL mode **Full (strict)**.
 
 ### 1.2 Create the stack
@@ -57,12 +59,15 @@ You can turn the orange cloud on later with SSL mode **Full (strict)**.
 2. Coolify → your project → **+ New** → the repository. For a private GitHub repository, connect
    it through Coolify's GitHub App.
 3. **Build pack:** Docker Compose. **Docker Compose location:** `/docker-compose.yml`.
-4. **Domains:**
-   - service **app** → `https://bari.imrankhanshuvo.com:8080`
-   - service **waha** → `https://waha.imrankhanshuvo.com:3000`
+4. **Domains:** Coolify creates one for **app** and one for **waha** by itself (the compose
+   file asks for them), based on your server's wildcard domain. To use the nicer names, change
+   them once in the **Domains** fields:
+   - **app** → `https://bari.imrankhanshuvo.com:8080`
+   - **waha** → `https://waha.imrankhanshuvo.com:3000`
 
-   The `:8080` / `:3000` only tells Coolify which port inside the container to use. People
-   still open the normal address.
+   Keep the `:8080` / `:3000`: it tells Coolify which port inside the container to use. People
+   still open the normal address. The app's own address (`APP_URL`, used in links in messages)
+   follows whatever domain is set here.
 5. **Environment variables** – fill in only what you use:
 
    | Variable | Value |
@@ -293,6 +298,7 @@ Start with the **Logs** of the service involved (Coolify → the stack → the s
 
 | Problem | What to do |
 |---|---|
+| No domains appear after creating the stack | The server has no wildcard domain in Coolify (Servers → your server → Wildcard Domain). Set one, or type the two domains in by hand (1.2) |
 | Site shows "No available server" | The domain is missing `:8080` / `:3000` (1.2), or **app** isn't healthy yet – check its logs |
 | Site shows a 500 error | Logs of **app**. Usually a database problem: is **db** running? |
 | Deploy failed | The deployment log in Coolify. Fix, push, redeploy – if the build failed, the old version is still running |

@@ -15,11 +15,13 @@ services:
     build: .
     restart: unless-stopped
     environment:
+      # Coolify creates the domain for this service (port 8080) and keeps APP_URL in step with it.
+      SERVICE_URL_APP_8080: /
       APP_NAME: "House Cost Planner"
       APP_ENV: production
       APP_DEBUG: "false"
       APP_KEY: base64:${SERVICE_REALBASE64_32_APPKEY}
-      APP_URL: ${APP_URL:-https://bari.imrankhanshuvo.com}
+      APP_URL: ${SERVICE_URL_APP_8080}
       LOG_CHANNEL: stderr
 
       DB_CONNECTION: pgsql
@@ -65,7 +67,7 @@ services:
       APP_ENV: production
       APP_DEBUG: "false"
       APP_KEY: base64:${SERVICE_REALBASE64_32_APPKEY}
-      APP_URL: ${APP_URL:-https://bari.imrankhanshuvo.com}
+      APP_URL: ${SERVICE_URL_APP_8080}
       LOG_CHANNEL: stderr
 
       DB_CONNECTION: pgsql
@@ -124,6 +126,7 @@ services:
     image: devlikeapro/waha:latest
     restart: unless-stopped
     environment:
+      SERVICE_URL_WAHA_3000: /  # Coolify creates the domain for the WhatsApp dashboard
       WAHA_API_KEY: ${SERVICE_PASSWORD_WAHAKEY}
       WAHA_DASHBOARD_USERNAME: admin
       WAHA_DASHBOARD_PASSWORD: ${SERVICE_PASSWORD_WAHADASHBOARD}
