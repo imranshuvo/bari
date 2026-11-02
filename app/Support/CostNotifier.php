@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Cost;
 use App\Models\NotificationRecipient;
 use App\Models\Supplier;
+use App\Models\User;
 use App\Notifications\CostChanged;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -58,13 +59,16 @@ class CostNotifier
     /** @param array<int, array{field: string, old: mixed, new: mixed}> $changes */
     private static function send(Cost $cost, string $event, array $changes = []): void
     {
-        $recipients = NotificationRecipient::where('project_id', $cost->project_id)->get();
-
-        if ($recipients->isEmpty()) {
-            return;
-        }
-
         $snapshot = self::snapshot($cost, $event, $changes);
+
+        self::sendToList($cost, $snapshot);
+        self::sendToTeam($cost, $snapshot);
+    }
+
+    /** The project's notification list: WhatsApp, SMS and email addresses. */
+    private static function sendToList(Cost $cost, array $snapshot): void
+    {
+        $recipients = NotificationRecipient::where('project_id', $cost->project_id)->get();
 
         foreach ($recipients as $recipient) {
             if (! $recipient->channel->isConfigured()) {
@@ -77,6 +81,24 @@ class CostNotifier
             try {
                 Notification::route($recipient->channel->driver(), $recipient->address)
                     ->notify((new CostChanged($snapshot))->locale($recipient->locale));
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+    }
+
+    /** App notifications for team members who turned them on – except whoever made the change. */
+    private static function sendToTeam(Cost $cost, array $snapshot): void
+    {
+        $members = User::query()
+            ->whereHas('projects', fn ($query) => $query->whereKey($cost->project_id))
+            ->whereHas('pushSubscriptions')
+            ->when(auth()->id(), fn ($query, $actor) => $query->whereKeyNot($actor))
+            ->get();
+
+        foreach ($members as $member) {
+            try {
+                $member->notify((new CostChanged($snapshot))->locale($member->locale));
             } catch (Throwable $e) {
                 report($e);
             }

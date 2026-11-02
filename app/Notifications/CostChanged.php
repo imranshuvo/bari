@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\WebPushChannel;
 use App\Support\Money;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -34,7 +35,7 @@ class CostChanged extends Notification implements ShouldQueue
     /** One recipient = one route, so send on exactly that channel. */
     public function via(object $notifiable): array
     {
-        return $notifiable instanceof AnonymousNotifiable ? array_keys($notifiable->routes) : ['mail'];
+        return $notifiable instanceof AnonymousNotifiable ? array_keys($notifiable->routes) : [WebPushChannel::class];
     }
 
     public function headline(): string
@@ -110,6 +111,17 @@ class CostChanged extends Notification implements ShouldQueue
     }
 
     /** Short: SMS in Bangla only fits 70 letters per text. */
+    /** @return array{title: string, body: string, url: string, tag: string} */
+    public function toWebPush(object $notifiable): array
+    {
+        return [
+            'title' => $this->cost['project'],
+            'body' => $this->headline()."\n".$this->summary(),
+            'url' => $this->cost['url'],
+            'tag' => 'cost-'.md5($this->cost['url'].$this->headline().$this->summary()),
+        ];
+    }
+
     public function toSms(object $notifiable): string
     {
         return $this->cost['project'].': '.$this->headline().'. '.$this->summary().' · '.$this->status();

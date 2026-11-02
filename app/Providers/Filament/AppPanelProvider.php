@@ -91,12 +91,23 @@ class AppPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedDevicePhoneMobile)
                     ->extraAttributes(['class' => 'bari-install-item'])
                     ->alpineClickHandler('window.bari.install()'),
+                'pushOn' => fn (): Action => Action::make('pushOn')
+                    ->label(__('Turn on notifications'))
+                    ->icon(Heroicon::OutlinedBellAlert)
+                    ->extraAttributes(['class' => 'bari-push-on-item'])
+                    ->alpineClickHandler('window.bari.push.enable()'),
+                'pushOff' => fn (): Action => Action::make('pushOff')
+                    ->label(__('Turn off notifications'))
+                    ->icon(Heroicon::OutlinedBellSlash)
+                    ->extraAttributes(['class' => 'bari-push-off-item'])
+                    ->alpineClickHandler('window.bari.push.disable()'),
                 'language' => fn (): Action => Action::make('language')
                     ->label(app()->getLocale() === 'bn' ? 'English' : 'বাংলা')
                     ->icon(Heroicon::OutlinedLanguage)
                     ->url(route('locale', app()->getLocale() === 'bn' ? 'en' : 'bn')),
             ])
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('filament.pwa-head'))
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => auth()->check() ? view('filament.push-toggle') : '')
             ->renderHook(
                 PanelsRenderHook::CONTENT_START,
                 fn () => view('filament.pwa-install'),

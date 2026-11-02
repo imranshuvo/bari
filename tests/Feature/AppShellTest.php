@@ -2,7 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ProjectRole;
+use App\Models\Project;
+use App\Models\User;
+use App\Support\VapidKeys;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AppShellTest extends TestCase
@@ -44,5 +50,20 @@ class AppShellTest extends TestCase
             ->assertSee('name="theme-color"', escape: false)
             ->assertSee('/sw.js', escape: false)
             ->assertSee('Bari');
+    }
+
+    public function test_signed_in_pages_offer_app_notifications(): void
+    {
+        Storage::fake('local');
+        VapidKeys::forget();
+        $user = User::factory()->create();
+        $project = Project::factory()->create();
+        $project->addMember($user, ProjectRole::Owner);
+
+        $this->actingAs($user)->get(Filament::getPanel('app')->getUrl($project))
+            ->assertOk()
+            ->assertSee('name="vapid-public-key" content="'.VapidKeys::get()['publicKey'].'"', escape: false)
+            ->assertSee('Turn on notifications')
+            ->assertSee('Turn off notifications');
     }
 }

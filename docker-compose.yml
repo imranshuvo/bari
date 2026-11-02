@@ -97,6 +97,8 @@ services:
 
       SMS_GATE_USERNAME: ${SMS_GATE_USERNAME}
       SMS_GATE_PASSWORD: ${SMS_GATE_PASSWORD}
+    volumes:
+      - app-files:/var/www/html/storage/app  # shares the app notification keys and bill photos
     healthcheck:
       test: ["CMD", "healthcheck-queue"]
       start_period: 15s

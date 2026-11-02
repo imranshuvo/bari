@@ -28,6 +28,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // App notifications (web push). Leave empty: a key pair is made once and kept in storage/app/private/vapid.json.
+    'webpush' => [
+        'public_key' => env('VAPID_PUBLIC_KEY'),
+        'private_key' => env('VAPID_PRIVATE_KEY'),
+    ],
+
     // WhatsApp through a self-hosted WAHA server (https://waha.devlike.pro).
     'waha' => [
         'url' => env('WAHA_URL'),
