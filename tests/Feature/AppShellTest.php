@@ -17,7 +17,7 @@ class AppShellTest extends TestCase
 
     public function test_the_manifest_describes_the_bari_app(): void
     {
-        $manifest = json_decode((string) file_get_contents(public_path('manifest.webmanifest')), true);
+        $manifest = json_decode((string) file_get_contents(public_path('manifest.json')), true);
 
         $this->assertSame('Bari', $manifest['name']);
         $this->assertSame('Bari', $manifest['short_name']);
@@ -45,7 +45,7 @@ class AppShellTest extends TestCase
     {
         $this->get('/login')
             ->assertOk()
-            ->assertSee('rel="manifest" href="/manifest.webmanifest"', escape: false)
+            ->assertSee('rel="manifest" href="/manifest.json"', escape: false)
             ->assertSee('rel="apple-touch-icon"', escape: false)
             ->assertSee('name="theme-color"', escape: false)
             ->assertSee('/sw.js', escape: false)

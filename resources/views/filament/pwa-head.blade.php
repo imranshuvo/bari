@@ -1,5 +1,5 @@
 {{-- Makes Bari installable on phones and registers the service worker (public/sw.js). --}}
-<link rel="manifest" href="/manifest.webmanifest">
+<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#047857">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">

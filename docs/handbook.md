@@ -1,4 +1,4 @@
-# House Cost Planner – Handbook
+# Bari – Handbook
 
 How to put the app online at **bari.imrankhanshuvo.com** and keep it running.
 
@@ -151,9 +151,22 @@ database and things look wrong, restore last night's backup (Part 3).
 
 ### 2.2 People
 
-**Inviting** (in the app, as an Owner): **Team → Invite someone**. They get an email with a
-link. If email isn't set up yet, press **Get link** next to the invitation in the list and send
-the link on WhatsApp. Only invited people can create an account.
+**Inviting** (in the app, as an Owner): **Team → Invite someone** → type their **email or
+WhatsApp number** (`01712345678` works; other countries need `+` and the country code).
+
+- **By number:** they get a WhatsApp message with a link (SMS if WhatsApp fails), tap it, type
+  their name and they're in – no email or password. Pick their language, and tick **Also send
+  them cost updates on WhatsApp** to add them to the Notifications list at the same time.
+- **By email:** they get an email with a link and create a password.
+- If nothing could be sent, the window says so – press **Get link** and send it yourself.
+
+Only invited people can create an account. If the number or email already has an account, they
+are added straight away.
+
+**Signing in by phone:** on the sign-in page, type the phone number → **Send code** → a 6-digit
+code arrives on WhatsApp (SMS as backup) → type it. People stay signed in on that phone for
+months. Anyone can add a phone number in **Profile** (confirmed with a code) to sign in either
+way. Phone sign-in needs WhatsApp (WAHA) or SMS to be connected.
 
 **Change role or remove:** **Team** → the person's row → **Change role** or **Remove**.
 Removing someone takes them out of that project; their account stays.
@@ -172,7 +185,10 @@ This signs them out on all devices.
 
 ```bash
 php artisan user:create --name="Karim" --email=karim@example.com --password=random --project="Our new house" --role=editor --locale=bn
+php artisan user:create --name="Rina" --phone=01712345678 --project="Our new house" --role=editor --locale=bn
 ```
+
+`user:password` is for email accounts; phone accounts sign in with a code.
 
 Roles: `owner` (everything, including settings and team), `editor` (add and edit costs),
 `viewer` (can only look).
@@ -217,6 +233,24 @@ Terminal → **app**: `php artisan down` shows a "back soon" page; `php artisan 
 back. A redeploy also brings it back.
 
 ---
+
+### 2.7 The Bari app on phones
+
+Bari installs like an app – no app store:
+
+- **Android:** open `https://bari.imrankhanshuvo.com` in Chrome → profile menu (top right) →
+  **Install app** (or Chrome's menu → *Add to Home screen*).
+- **iPhone:** open it in Safari → **Share** → **Add to Home Screen**. The overview page shows a
+  short tip until it's dismissed.
+
+**App notifications:** each person opens the profile menu → **Turn on notifications** → allow.
+From then on that phone gets an alert whenever a cost in their project is added, changed, paid or
+deleted (not for their own changes), in their own language. On iPhone this needs iOS 16.4+ and
+Bari installed on the home screen first. **Turn off notifications** in the same menu stops them.
+
+Nothing to set up on the server: the notification keys are created on first use and stored in
+the `app-files` volume (so they are in the backups). Don't delete `vapid.json` from it – every
+phone would have to turn notifications on again.
 
 ## Part 3 – Backups and restore
 
@@ -309,6 +343,9 @@ Start with the **Logs** of the service involved (Coolify → the stack → the s
 | WhatsApp fails with 422 | The **default** session isn't running – scan the QR again (2.5) |
 | WhatsApp fails with 401 | `SERVICE_PASSWORD_WAHAKEY` was changed – redeploy so both services use the same value |
 | SMS fails | Is the gateway phone on, online and the app's service started? Check `SMS_GATE_*` |
+| Phone sign-in: "isn't available right now" | Neither WhatsApp nor SMS is connected – check the WAHA session (2.5). People with an email can still sign in with it |
+| Phone sign-in: the code never arrives | WAHA session not *WORKING*, or the phone is offline. Wait a minute and press **Send a new code**; codes are limited to 1 a minute and 5 an hour per number |
+| App notifications stopped on a phone | Notifications blocked in the phone's settings, or the app was removed. Turn them on again from the profile menu |
 | Emails never arrive | `MAIL_*` settings; the sender address must be verified with your mail provider. Check spam |
 | Everyone signed out, or 500 errors right after changing variables | A `SERVICE_…` value was changed – put the old value back and redeploy |
 | Someone can't open the sign-up page | Sign-up is invite-only: invite them (2.2). A used link can't be reused – send a new invitation |

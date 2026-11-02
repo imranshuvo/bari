@@ -1,4 +1,4 @@
-# House Cost Planner
+# Bari – house cost planner
 
 Track the cost of building a house with your team: **Budget → Agreed → Spent**.
 Laravel 13 · Filament 5 · PostgreSQL · English and বাংলা.
@@ -29,12 +29,20 @@ bari.imrankhanshuvo.com, everyday tasks, backups and restore, and troubleshootin
 ## Accounts
 
 Sign-up is by invitation only (`OPEN_REGISTRATION=false`). Owners invite people from
-**Team**; the invitation link lets them create an account. To create one yourself:
+**Team** by email or WhatsApp number; the link lets them create an account. People added by
+number sign in with a 6-digit code on WhatsApp. To create an account yourself:
 
 ```bash
-php artisan user:create                  # asks for name, email, password and project
+php artisan user:create                  # asks for name, email or phone, password and project
+php artisan user:create --phone=01712345678 --name=Rina --project="Our new house"
 php artisan user:password someone@x.com  # new password, signs them out everywhere
 ```
+
+## The app
+
+Bari is an installable web app (`public/manifest.json`, `public/sw.js`): **Install app** in the
+profile menu on Android, *Share → Add to Home Screen* on iPhone. Team members can turn on app
+notifications (web push) for cost changes from the same menu.
 
 ## Notifications
 
