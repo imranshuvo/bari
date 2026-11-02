@@ -1,0 +1,411 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../app/Livewire/**/*';
+@source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/livewire/**/*';
+
+/*
+ * House Cost Planner – 2026 look.
+ * Soft neutral canvas, generous spacing, rounded-2xl cards with layered shadows,
+ * frosted top bar, Geist for Latin and Noto Sans Bengali for Bangla.
+ */
+
+@theme {
+    --shadow-card: 0 1px 2px rgb(24 24 27 / 0.04), 0 4px 16px -6px rgb(24 24 27 / 0.08);
+    --shadow-card-hover: 0 1px 2px rgb(24 24 27 / 0.05), 0 12px 32px -12px rgb(24 24 27 / 0.18);
+    --shadow-button: 0 1px 2px rgb(4 120 87 / 0.25), inset 0 1px 0 rgb(255 255 255 / 0.18);
+}
+
+/* ---------- Base ---------- */
+
+html,
+body,
+.fi-body {
+    font-family: var(--font-family), 'Noto Sans Bengali', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+}
+
+.fi-body {
+    @apply bg-zinc-50 dark:bg-zinc-950;
+    background-image: radial-gradient(1200px 500px at 85% -10%, rgb(16 185 129 / 0.07), transparent 60%);
+}
+
+.dark .fi-body {
+    background-image: radial-gradient(1200px 500px at 85% -10%, rgb(16 185 129 / 0.08), transparent 60%);
+}
+
+.money {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Brand ---------- */
+
+.hcp-brand {
+    @apply flex items-center gap-2.5;
+}
+
+.hcp-brand-mark {
+    @apply flex size-9 shrink-0 items-center justify-center rounded-xl text-white;
+    background: linear-gradient(135deg, #10b981, #047857);
+    box-shadow: 0 4px 12px -4px rgb(4 120 87 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.25);
+
+    & svg {
+        @apply size-5;
+    }
+}
+
+.hcp-brand-name {
+    @apply text-base font-semibold tracking-tight text-zinc-950 dark:text-white;
+}
+
+.hcp-brand-invert .hcp-brand-mark {
+    @apply bg-white/15 ring-1 ring-white/30;
+    background: rgb(255 255 255 / 0.15);
+}
+
+.hcp-brand-invert .hcp-brand-name {
+    @apply text-white;
+}
+
+/* ---------- Top bar & sidebar ---------- */
+
+.fi-topbar {
+    @apply bg-white/75 shadow-none ring-0 backdrop-blur-xl dark:bg-zinc-950/70;
+    border-bottom: 1px solid rgb(24 24 27 / 0.06);
+}
+
+.dark .fi-topbar {
+    border-bottom-color: rgb(255 255 255 / 0.06);
+}
+
+.fi-sidebar {
+    @apply lg:bg-transparent;
+}
+
+.fi-sidebar-header {
+    @apply bg-transparent shadow-none ring-0;
+}
+
+.fi-sidebar-nav {
+    @apply px-5;
+}
+
+.fi-sidebar-item-btn {
+    @apply rounded-xl px-3 py-2.5 transition-colors duration-150;
+}
+
+.fi-sidebar-item-label {
+    @apply text-[0.9375rem] font-medium text-zinc-600 dark:text-zinc-300;
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    @apply bg-white shadow-(--shadow-card) ring-1 ring-zinc-950/5 dark:bg-white/[0.06] dark:ring-white/10;
+
+    & > .fi-sidebar-item-label {
+        @apply font-semibold text-zinc-950 dark:text-white;
+    }
+
+    & > .fi-icon {
+        @apply text-primary-600 dark:text-primary-400;
+    }
+}
+
+.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn {
+    @apply hover:bg-zinc-950/[0.04] dark:hover:bg-white/[0.04];
+}
+
+.fi-sidebar-group-label {
+    @apply text-xs font-semibold tracking-wider text-zinc-400 uppercase dark:text-zinc-500;
+}
+
+.fi-tenant-menu-trigger {
+    @apply rounded-xl bg-white p-2.5 shadow-(--shadow-card) ring-1 ring-zinc-950/5 dark:bg-white/[0.04] dark:ring-white/10;
+}
+
+/* ---------- Page header ---------- */
+
+.fi-header-heading {
+    @apply text-3xl font-semibold tracking-tight sm:text-[2.125rem];
+}
+
+.fi-header-subheading {
+    @apply mt-1 max-w-3xl text-base text-zinc-500 dark:text-zinc-400;
+}
+
+.fi-breadcrumbs {
+    @apply hidden;
+}
+
+/* ---------- Cards: sections, tables, stats, widgets ---------- */
+
+.fi-section:not(.fi-section-not-contained):not(.fi-aside),
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat,
+.fi-wi-chart .fi-section {
+    @apply rounded-2xl shadow-(--shadow-card) ring-zinc-950/[0.06] dark:bg-zinc-900/80 dark:ring-white/[0.08];
+}
+
+.fi-section-header-heading {
+    @apply text-base font-semibold tracking-tight;
+}
+
+.fi-section:not(.fi-section-not-contained) > .fi-section-header {
+    @apply px-6 py-5;
+}
+
+/* ---------- Tables ---------- */
+
+.fi-ta-header-cell {
+    @apply bg-transparent text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400;
+}
+
+.fi-ta-header-cell .fi-ta-header-cell-label {
+    @apply text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400;
+}
+
+.fi-ta-row {
+    @apply transition-colors duration-100;
+}
+
+.fi-ta-table > thead > tr {
+    @apply bg-zinc-50/70 dark:bg-white/[0.02];
+}
+
+.fi-ta-header-toolbar {
+    @apply px-5 py-3;
+}
+
+.fi-ta-text-item-label {
+    @apply text-[0.9375rem];
+}
+
+/* Row icon buttons stay quiet until hovered. */
+.fi-ta-actions .fi-icon-btn {
+    @apply text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200;
+}
+
+.fi-ta-actions .fi-icon-btn.fi-color-danger {
+    @apply hover:text-danger-600 dark:hover:text-danger-400;
+}
+
+/* ---------- Tabs (pill segmented control) ---------- */
+
+.fi-tabs:not(.fi-vertical) {
+    @apply rounded-2xl bg-zinc-950/[0.04] p-1 shadow-none ring-0 dark:bg-white/[0.05];
+}
+
+.fi-tabs-item {
+    @apply rounded-xl px-4 py-2;
+
+    &.fi-active {
+        @apply bg-white shadow-(--shadow-card) dark:bg-white/10;
+    }
+}
+
+/* ---------- Buttons & inputs ---------- */
+
+.fi-btn {
+    @apply rounded-xl;
+}
+
+.fi-btn.fi-size-md,
+.fi-btn.fi-size-lg {
+    @apply px-4 py-2.5;
+}
+
+.fi-btn.fi-color-primary:not(.fi-outlined) {
+    box-shadow: var(--shadow-button);
+}
+
+.fi-input-wrp {
+    @apply rounded-xl;
+}
+
+.fi-input-wrp:not(.fi-disabled):focus-within {
+    @apply ring-primary-500/70;
+}
+
+.fi-input {
+    @apply py-2.5;
+}
+
+.fi-fo-field-label-content {
+    @apply font-medium;
+}
+
+.fi-badge {
+    @apply rounded-full px-2.5;
+}
+
+/* ---------- Modals & slide-overs ---------- */
+
+.fi-modal-window {
+    @apply rounded-3xl;
+}
+
+.fi-modal-slide-over-window {
+    @apply rounded-none sm:rounded-s-3xl;
+}
+
+.fi-modal-heading {
+    @apply text-xl font-semibold tracking-tight;
+}
+
+/* ---------- Stats ---------- */
+
+.fi-wi-stats-overview-stat-value {
+    @apply text-3xl font-semibold tracking-tight;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Chart colours, validated for contrast against the light and dark card surfaces. */
+.fi-wi-chart .fi-wi-chart-bg-color,
+.fi-wi-chart .fi-wi-chart-border-color {
+    color: #047857 !important;
+}
+
+.dark .fi-wi-chart .fi-wi-chart-bg-color,
+.dark .fi-wi-chart .fi-wi-chart-border-color {
+    color: #059669 !important;
+}
+
+.fi-wi-chart .fi-wi-chart-grid-color {
+    color: rgb(24 24 27 / 0.06) !important;
+}
+
+.dark .fi-wi-chart .fi-wi-chart-grid-color {
+    color: rgb(255 255 255 / 0.07) !important;
+}
+
+/* ---------- Sign in / sign up: split screen ---------- */
+
+.fi-simple-layout:has(> .hcp-auth-aside) {
+    @apply lg:grid lg:min-h-dvh lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-stretch;
+
+    & > .fi-simple-main-ctn {
+        @apply min-h-dvh px-4 sm:px-8;
+    }
+
+    & .fi-simple-main {
+        @apply my-10 max-w-md bg-transparent px-0 py-0 shadow-none ring-0 sm:px-0 dark:bg-transparent;
+    }
+
+    & .fi-simple-header-heading {
+        @apply text-3xl font-semibold tracking-tight;
+    }
+
+    & .fi-simple-header .fi-logo {
+        @apply lg:hidden;
+    }
+}
+
+.hcp-auth-aside {
+    @apply relative hidden overflow-hidden lg:block;
+    background: linear-gradient(150deg, #064e3b 0%, #047857 55%, #0f766e 100%);
+}
+
+.hcp-auth-aside-glow {
+    @apply pointer-events-none absolute inset-0;
+    background:
+        radial-gradient(600px 400px at 15% 10%, rgb(52 211 153 / 0.35), transparent 60%),
+        radial-gradient(500px 500px at 90% 90%, rgb(20 184 166 / 0.35), transparent 60%);
+}
+
+/* ---------- Other simple pages (create project, etc.) ---------- */
+
+.fi-simple-layout:not(:has(> .hcp-auth-aside)) .fi-simple-main {
+    @apply rounded-3xl shadow-(--shadow-card) ring-zinc-950/[0.06] sm:px-10 dark:ring-white/[0.08];
+}
+
+/* Category picker as tappable tiles */
+.hcp-tiles .fi-fo-checkbox-list-options {
+    @apply gap-2.5;
+}
+
+.hcp-tiles .fi-fo-checkbox-list-option {
+    @apply flex h-full cursor-pointer items-center gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-zinc-950/10 transition dark:bg-white/5 dark:ring-white/10;
+
+    &:hover {
+        @apply ring-zinc-950/20 dark:ring-white/20;
+    }
+
+    & .fi-checkbox-input {
+        @apply mt-0;
+    }
+
+    &:has(input:checked) {
+        @apply bg-primary-50/70 ring-primary-600/60 dark:bg-primary-500/10 dark:ring-primary-500/60;
+    }
+}
+
+/* ---------- Mobile bottom navigation ---------- */
+
+.hcp-mobile-nav {
+    @apply fixed inset-x-3 z-20 flex items-center justify-around rounded-2xl bg-white/85 px-2 py-1.5 shadow-(--shadow-card-hover) ring-1 ring-zinc-950/[0.06] backdrop-blur-xl dark:bg-zinc-900/85 dark:ring-white/10;
+    bottom: calc(env(safe-area-inset-bottom) + 0.75rem);
+}
+
+.hcp-mobile-nav-item {
+    @apply flex min-w-14 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[0.6875rem] font-medium text-zinc-500 dark:text-zinc-400;
+
+    &.is-active {
+        @apply text-primary-700 dark:text-primary-400;
+    }
+}
+
+
+/* ---------- Floating "Add cost" (desktop) ---------- */
+
+.hcp-fab {
+    @apply fixed end-4 z-20 inline-flex size-14 items-center justify-center gap-2 rounded-2xl text-[0.9375rem] font-semibold text-white transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 lg:end-6 lg:size-auto lg:py-3.5 lg:ps-5 lg:pe-3.5;
+    /* On phones it sits just above the bottom bar. */
+    bottom: calc(env(safe-area-inset-bottom) + 5.75rem);
+    background: linear-gradient(135deg, #10b981, #047857);
+    box-shadow: 0 14px 32px -10px rgb(4 120 87 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+
+.hcp-fab-kbd {
+    @apply ms-1 rounded-md bg-white/20 px-1.5 py-0.5 font-sans text-xs font-medium text-white/90;
+}
+
+@media (min-width: 1024px) {
+    .hcp-mobile-nav {
+        display: none;
+    }
+
+    .hcp-fab {
+        bottom: 1.5rem;
+    }
+
+    /* Room so the floating button never covers the last row. */
+    .fi-main {
+        padding-bottom: 6rem;
+    }
+}
+
+/* The add button now floats, so it never sits in the top bar. */
+.hcp-topbar-add {
+    display: none;
+}
+
+
+@media (max-width: 1023px) {
+    .fi-main {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 6.5rem);
+    }
+
+}
+
+/* Phones: drop a row-actions column whose every action is hidden there (e.g. viewers). */
+@media (max-width: 767px) {
+    .fi-ta-cell:has(> .fi-ta-actions):not(:has(> .fi-ta-actions > :not(.max-md\:hidden))) {
+        display: none;
+    }
+
+    .fi-ta-table:not(:has(.fi-ta-cell > .fi-ta-actions > :not(.max-md\:hidden))) thead th:last-child:empty,
+    .fi-ta-table:not(:has(.fi-ta-cell > .fi-ta-actions > :not(.max-md\:hidden))) thead th:last-child:not(:has(*)) {
+        display: none;
+    }
+}

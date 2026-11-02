@@ -1,0 +1,14 @@
+#!/bin/sh
+# Takes a backup now, then every night at BACKUP_HOUR_UTC (default 21 = 03:00 in Bangladesh).
+set -eu
+
+# cron jobs don't see the container's environment, so save it for backup-now.
+export -p > /etc/backup.env
+
+echo "${BACKUP_MINUTE_UTC:-0} ${BACKUP_HOUR_UTC:-21} * * * /usr/local/bin/backup-now > /proc/1/fd/1 2>&1" > /etc/crontabs/root
+
+# Wait for the database, then take a first backup so a fresh deploy is covered straight away.
+until pg_isready -q; do sleep 2; done
+backup-now || echo "First backup failed – see the message above."
+
+exec crond -f -l 8

@@ -1,0 +1,50 @@
+<?php
+
+// Common rules only; anything missing falls back to English.
+return [
+    'accepted' => ':attribute গ্রহণ করতে হবে।',
+    'after' => ':attribute অবশ্যই :date-এর পরের তারিখ হতে হবে।',
+    'after_or_equal' => ':attribute অবশ্যই :date বা তার পরের তারিখ হতে হবে।',
+    'before' => ':attribute অবশ্যই :date-এর আগের তারিখ হতে হবে।',
+    'before_or_equal' => ':attribute অবশ্যই :date বা তার আগের তারিখ হতে হবে।',
+    'boolean' => ':attribute হ্যাঁ অথবা না হতে হবে।',
+    'confirmed' => ':attribute মিলছে না।',
+    'current_password' => 'পাসওয়ার্ডটি ভুল।',
+    'date' => ':attribute একটি সঠিক তারিখ নয়।',
+    'email' => ':attribute একটি সঠিক ইমেইল ঠিকানা হতে হবে।',
+    'exists' => 'বাছাই করা :attribute সঠিক নয়।',
+    'file' => ':attribute একটি ফাইল হতে হবে।',
+    'image' => ':attribute একটি ছবি হতে হবে।',
+    'in' => 'বাছাই করা :attribute সঠিক নয়।',
+    'integer' => ':attribute একটি পূর্ণ সংখ্যা হতে হবে।',
+    'max' => [
+        'array' => ':attribute-এ :maxটির বেশি থাকতে পারবে না।',
+        'file' => ':attribute :max কিলোবাইটের বেশি হতে পারবে না।',
+        'numeric' => ':attribute :max-এর বেশি হতে পারবে না।',
+        'string' => ':attribute :maxটি অক্ষরের বেশি হতে পারবে না।',
+    ],
+    'mimes' => ':attribute অবশ্যই :values ধরনের ফাইল হতে হবে।',
+    'mimetypes' => ':attribute অবশ্যই :values ধরনের ফাইল হতে হবে।',
+    'min' => [
+        'array' => ':attribute-এ অন্তত :minটি থাকতে হবে।',
+        'file' => ':attribute অন্তত :min কিলোবাইট হতে হবে।',
+        'numeric' => ':attribute অন্তত :min হতে হবে।',
+        'string' => ':attribute অন্তত :minটি অক্ষরের হতে হবে।',
+    ],
+    'numeric' => ':attribute একটি সংখ্যা হতে হবে।',
+    'password' => [
+        'letters' => ':attribute-এ অন্তত একটি অক্ষর থাকতে হবে।',
+        'mixed' => ':attribute-এ অন্তত একটি বড় ও একটি ছোট হাতের অক্ষর থাকতে হবে।',
+        'numbers' => ':attribute-এ অন্তত একটি সংখ্যা থাকতে হবে।',
+        'symbols' => ':attribute-এ অন্তত একটি চিহ্ন থাকতে হবে।',
+        'uncompromised' => 'এই :attribute ফাঁস হওয়া তালিকায় পাওয়া গেছে। অন্য একটি বেছে নিন।',
+    ],
+    'required' => ':attribute দিতে হবে।',
+    'required_if' => ':other :value হলে :attribute দিতে হবে।',
+    'same' => ':attribute ও :other মিলতে হবে।',
+    'string' => ':attribute লেখা হতে হবে।',
+    'unique' => 'এই :attribute আগে থেকেই আছে।',
+    'url' => ':attribute একটি সঠিক লিংক হতে হবে।',
+
+    'attributes' => [],
+];

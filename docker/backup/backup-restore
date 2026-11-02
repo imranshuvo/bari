@@ -1,0 +1,32 @@
+#!/bin/sh
+# Puts the database and uploaded files back to an earlier backup.
+# Usage: backup-restore 2026-11-02_210000     (the part after db_ in the file name)
+set -eu
+[ -f /etc/backup.env ] && . /etc/backup.env
+
+stamp="${1:-}"
+if [ -z "$stamp" ]; then
+    echo "Usage: backup-restore <date_time>   e.g. backup-restore 2026-11-02_210000"
+    echo
+    echo "Backups available:"
+    ls -1 /backups | sed -n 's/^db_\(.*\)\.dump$/  \1/p'
+    exit 1
+fi
+
+db="/backups/db_${stamp}.dump"
+files="/backups/files_${stamp}.tar.gz"
+[ -f "$db" ] || { echo "There is no backup called ${stamp}."; exit 1; }
+
+echo "Saving the current state first, in case you want it back..."
+backup-now
+
+echo "Restoring the database from ${stamp}..."
+pg_restore --clean --if-exists --no-owner --single-transaction --dbname="$PGDATABASE" "$db"
+
+if [ -f "$files" ]; then
+    echo "Restoring the uploaded files from ${stamp}..."
+    find /files -mindepth 1 -delete
+    tar -xzf "$files" -C /files
+fi
+
+echo "Done. Everything is back to ${stamp}."
