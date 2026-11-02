@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\Register;
 use App\Filament\Pages\Dashboard;
@@ -59,7 +60,7 @@ class AppPanelProvider extends PanelProvider
             ->login(Login::class)
             ->registration(Register::class)
             ->passwordReset()
-            ->profile(isSimple: false)
+            ->profile(EditProfile::class, isSimple: false)
             ->tenant(Project::class)
             ->tenantRegistration(RegisterProject::class)
             ->tenantProfile(EditProject::class)
