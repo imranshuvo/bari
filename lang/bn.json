@@ -240,6 +240,8 @@
     "Add “:name”": "“:name” যোগ করুন",
     "Type a name to search or add a new category": "নাম লিখে খুঁজুন বা নতুন খাত যোগ করুন",
     "Type to search": "খুঁজতে লিখুন",
+    "Total for this selection": "বাছাই করা খরচের মোট",
+    ":count bill|:count bills": ":countটি বিল|:countটি বিল",
     "No category with that name. Only owners can add categories.": "এই নামে কোনো খাত নেই। শুধু মালিকরা নতুন খাত যোগ করতে পারেন।",
     "Filter": "ফিল্টার",
     "From": "শুরু",

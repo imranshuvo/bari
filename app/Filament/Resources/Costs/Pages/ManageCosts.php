@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Costs\Pages;
 
 use App\Filament\Resources\Costs\CostResource;
+use App\Filament\Widgets\SpentSummary;
+use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,6 +12,8 @@ use Livewire\Attributes\On;
 
 class ManageCosts extends ManageRecords
 {
+    use ExposesTableToWidgets;
+
     protected static string $resource = CostResource::class;
 
     public function getTitle(): string
@@ -26,6 +30,11 @@ class ManageCosts extends ManageRecords
     {
         // "Add cost" is the floating button available on every page.
         return [];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [SpentSummary::class];
     }
 
     public function getTabs(): array

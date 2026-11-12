@@ -9,6 +9,7 @@ use App\Filament\Pages\Tenancy\RegisterProject;
 use App\Filament\Resources\Categories\Pages\ManageCategories;
 use App\Filament\Resources\Costs\Pages\ManageCosts;
 use App\Filament\Resources\Memberships\Pages\ManageMemberships;
+use App\Filament\Widgets\SpentSummary;
 use App\Livewire\AddCostButton;
 use App\Models\Agreement;
 use App\Models\Category;
@@ -172,6 +173,31 @@ class CostWorkflowTest extends TestCase
             ->filterTable('date', ['from' => '2026-11-01', 'until' => '2026-11-05'])
             ->assertCanSeeTableRecords([$november])
             ->assertCanNotSeeTableRecords([$october, $roofCost]);
+    }
+
+    public function test_the_summary_at_the_top_follows_the_filters_and_tabs(): void
+    {
+        Cost::factory()->in(Category::factory()->for(Project::factory())->create())->create(['amount' => 9_999_00]);
+        $this->as(ProjectRole::Viewer);
+        $roof = Category::factory()->for($this->project)->create(['name' => 'Roof']);
+        Cost::factory()->for($this->project)->create(['amount' => 1_000_00, 'category_id' => $this->category->id]);
+        Cost::factory()->for($this->project)->create(['amount' => 2_000_00, 'category_id' => $roof->id]);
+        Cost::factory()->for($this->project)->create(['amount' => 5_000_00, 'category_id' => $roof->id, 'is_paid' => false, 'due_date' => now()->subDay()]);
+
+        $totals = fn (array $state) => Livewire::test(SpentSummary::class, $state)->instance()->totals();
+
+        $this->assertSame(
+            ['count' => 3, 'total' => 8_000_00, 'paid' => 3_000_00, 'unpaid' => 5_000_00, 'overdue' => 1],
+            $totals(['activeTab' => 'all']),
+        );
+        $this->assertSame(
+            ['count' => 2, 'total' => 7_000_00, 'paid' => 2_000_00, 'unpaid' => 5_000_00, 'overdue' => 1],
+            $totals(['activeTab' => 'all', 'tableFilters' => ['category_id' => ['value' => $roof->id]]]),
+        );
+        $this->assertSame(
+            ['count' => 1, 'total' => 5_000_00, 'paid' => 0, 'unpaid' => 5_000_00, 'overdue' => 1],
+            $totals(['activeTab' => 'unpaid']),
+        );
     }
 
     public function test_dates_are_shown_day_first(): void
