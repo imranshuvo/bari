@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ProjectRole;
+use App\Filament\Forms\CategorySelect;
 use App\Filament\Forms\SupplierSelect;
 use App\Filament\Pages\Tenancy\RegisterProject;
 use App\Filament\Resources\Categories\Pages\ManageCategories;
@@ -102,6 +103,52 @@ class CostWorkflowTest extends TestCase
             ['Karim Steel' => 'Add “Karim Steel”'],
             SupplierSelect::searchResults('  Karim   Steel '),
         );
+    }
+
+    public function test_an_owner_adds_a_new_category_while_adding_a_cost(): void
+    {
+        $this->as(ProjectRole::Owner);
+
+        $this->assertSame(['new:Roof' => 'Add “Roof”'], CategorySelect::searchResults('Roof'));
+        $this->assertSame([$this->category->id => 'Foundation'], CategorySelect::searchResults('foundation'));
+
+        Livewire::test(AddCostButton::class)
+            ->callAction('addCost', data: [
+                'amount' => '5000', 'date' => '2026-10-01', 'category_id' => 'new:Roof', 'is_paid' => true,
+            ])
+            ->assertHasNoErrors();
+
+        $roof = $this->project->categories()->where('name', 'Roof')->sole();
+        $this->assertSame(0, $roof->budget);
+        $this->assertSame($roof->id, Cost::sole()->category_id);
+    }
+
+    public function test_an_editor_cannot_add_a_category_from_the_cost_form(): void
+    {
+        $this->as(ProjectRole::Editor);
+
+        $this->assertSame([], CategorySelect::searchResults('Roof'));
+
+        Livewire::test(AddCostButton::class)
+            ->callAction('addCost', data: [
+                'amount' => '5000', 'date' => '2026-10-01', 'category_id' => 'new:Roof', 'is_paid' => true,
+            ])
+            ->assertHasFormErrors(['category_id']);
+
+        $this->assertSame(1, Category::count());
+        $this->assertSame(0, Cost::count());
+    }
+
+    public function test_a_category_from_another_project_is_rejected(): void
+    {
+        $other = Category::factory()->for(Project::factory())->create();
+        $this->as(ProjectRole::Owner);
+
+        Livewire::test(AddCostButton::class)
+            ->callAction('addCost', data: [
+                'amount' => '5000', 'date' => '2026-10-01', 'category_id' => $other->id, 'is_paid' => true,
+            ])
+            ->assertHasFormErrors(['category_id']);
     }
 
     public function test_spending_can_be_filtered_by_supplier_category_and_date_range(): void

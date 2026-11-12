@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Agreements;
 
 use App\Filament\Concerns\ScopedToCurrentProject;
 use App\Filament\Concerns\UsesCurrentProject;
+use App\Filament\Forms\CategorySelect;
 use App\Filament\Forms\MoneyInput;
 use App\Filament\Forms\SupplierSelect;
 use App\Filament\Resources\Agreements\Pages\ManageAgreements;
@@ -16,7 +17,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -84,12 +84,7 @@ class AgreementResource extends Resource
                 ->label(__('With whom?'))
                 ->placeholder(__('Contractor or shop'))
                 ->required(),
-            Select::make('category_id')
-                ->label(__('Category'))
-                ->options(fn () => static::project()->categories()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->native(false)
+            CategorySelect::make()
                 ->required(),
             CostForm::attachments('Contract or quote (photo or PDF)'),
             Textarea::make('notes')

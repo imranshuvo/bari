@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Costs\Schemas;
 
+use App\Filament\Forms\CategorySelect;
 use App\Filament\Forms\MoneyInput;
 use App\Filament\Forms\SupplierSelect;
 use App\Models\Agreement;
@@ -57,12 +58,7 @@ class CostForm
                     self::pickAgreement($get, $set);
                 }),
 
-            Select::make('category_id')
-                ->label(__('Category'))
-                ->options(fn () => self::project()->categories()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->native(false)
+            CategorySelect::make()
                 ->required()
                 ->live()
                 ->afterStateUpdated(fn (Get $get, Set $set) => self::pickAgreement($get, $set)),
@@ -139,7 +135,7 @@ class CostForm
     private static function pickAgreement(Get $get, Set $set): void
     {
         $options = self::agreementQuery($get('supplier_name'))
-            ->when($get('category_id'), fn ($q, $category) => $q->where('category_id', $category))
+            ->when(CategorySelect::isExisting($get('category_id')), fn ($q) => $q->where('category_id', $get('category_id')))
             ->pluck('id');
 
         if ($options->count() === 1) {

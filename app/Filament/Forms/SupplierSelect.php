@@ -24,7 +24,7 @@ class SupplierSelect
             ->preload()
             ->options(fn (): array => self::names())
             ->getSearchResultsUsing(fn (?string $search): array => self::searchResults($search))
-            ->getOptionLabelUsing(fn (?string $value): ?string => $value)
+            ->getOptionLabelUsing(fn (mixed $value): ?string => filled($value) ? (string) $value : null)
             ->searchPrompt(__('Type a name to search or add someone new'))
             ->noSearchResultsMessage(__('Type a name to add someone new'))
             ->rule('max:120');
