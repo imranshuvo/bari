@@ -6,6 +6,7 @@ use App\Filament\Concerns\ScopedToCurrentProject;
 use App\Filament\Concerns\UsesCurrentProject;
 use App\Filament\Resources\Activities\Pages\ListActivities;
 use App\Models\Activity;
+use App\Support\DateFormat;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -65,7 +66,7 @@ class ActivityResource extends Resource
                 TextColumn::make('created_at')
                     ->label(__('When'))
                     ->since()
-                    ->dateTimeTooltip('j M Y H:i')
+                    ->dateTimeTooltip(DateFormat::DATE_TIME)
                     ->color('gray'),
                 TextColumn::make('user.name')
                     ->label(__('Who'))

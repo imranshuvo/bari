@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Costs\Schemas;
 
 use App\Filament\Forms\MoneyInput;
+use App\Filament\Forms\SupplierSelect;
 use App\Models\Agreement;
 use App\Models\Project;
 use App\Models\Supplier;
@@ -39,13 +40,11 @@ class CostForm
 
             self::attachments(),
 
-            TextInput::make('supplier_name')
+            SupplierSelect::make()
                 ->label(__('Paid to'))
                 ->placeholder(__('Shop, contractor or person'))
-                ->helperText(__('Start typing – people you have paid before will be suggested.'))
-                ->datalist(fn () => self::project()->suppliers()->orderBy('name')->pluck('name')->all())
-                ->maxLength(120)
-                ->live(onBlur: true)
+                ->helperText(__('Pick someone you have paid before, or type a new name.'))
+                ->live()
                 ->afterStateUpdated(function (?string $state, Get $get, Set $set) {
                     $supplier = Supplier::findByName(self::project(), $state);
 

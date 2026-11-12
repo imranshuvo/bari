@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Notifications\Channels\WebPushChannel;
+use App\Support\DateFormat;
 use App\Support\Money;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -134,7 +135,7 @@ class CostChanged extends Notification implements ShouldQueue
 
     private function date(?string $date): string
     {
-        return $date ? Carbon::parse($date)->translatedFormat('j M Y') : '—';
+        return $date ? Carbon::parse($date)->format(DateFormat::DATE) : '—';
     }
 
     private function fieldLabel(string $field): string

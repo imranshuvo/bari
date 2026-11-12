@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Agreements;
 use App\Filament\Concerns\ScopedToCurrentProject;
 use App\Filament\Concerns\UsesCurrentProject;
 use App\Filament\Forms\MoneyInput;
+use App\Filament\Forms\SupplierSelect;
 use App\Filament\Resources\Agreements\Pages\ManageAgreements;
 use App\Filament\Resources\Costs\CostResource;
 use App\Filament\Resources\Costs\Schemas\CostForm;
@@ -79,12 +80,10 @@ class AgreementResource extends Resource
                     ->label(__('Agreed on'))
                     ->default(today()),
             ]),
-            TextInput::make('supplier_name')
+            SupplierSelect::make()
                 ->label(__('With whom?'))
                 ->placeholder(__('Contractor or shop'))
-                ->datalist(fn () => static::project()->suppliers()->orderBy('name')->pluck('name')->all())
-                ->required()
-                ->maxLength(120),
+                ->required(),
             Select::make('category_id')
                 ->label(__('Category'))
                 ->options(fn () => static::project()->categories()->pluck('name', 'id'))

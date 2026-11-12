@@ -7,6 +7,10 @@ use App\Models\PushSubscription;
 use App\Models\User;
 use App\Services\Sms\SmsGate;
 use App\Services\Sms\SmsSender;
+use App\Support\DateFormat;
+use Filament\Forms\Components\DatePicker;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->configureDates();
+
         // Signing out stops app notifications on that device (it may be a shared family phone).
         Event::listen(Logout::class, function () {
             if (request()->hasSession() && ($endpoint = request()->session()->get('push_endpoint'))) {
@@ -38,5 +44,25 @@ class AppServiceProvider extends ServiceProvider
                 ->get()
                 ->each(fn (Invitation $invitation) => $invitation->acceptFor($user));
         });
+    }
+
+    /**
+     * Show and pick dates as dd-mm-yyyy everywhere. The phone's own date picker
+     * would follow the phone's region (often mm/dd/yyyy), so Filament's picker is used.
+     */
+    private function configureDates(): void
+    {
+        DatePicker::configureUsing(fn (DatePicker $picker) => $picker
+            ->native(false)
+            ->displayFormat(DateFormat::DATE)
+            ->closeOnDateSelection());
+
+        Schema::configureUsing(fn (Schema $schema) => $schema
+            ->defaultDateDisplayFormat(DateFormat::DATE)
+            ->defaultDateTimeDisplayFormat(DateFormat::DATE_TIME));
+
+        Table::configureUsing(fn (Table $table) => $table
+            ->defaultDateDisplayFormat(DateFormat::DATE)
+            ->defaultDateTimeDisplayFormat(DateFormat::DATE_TIME));
     }
 }

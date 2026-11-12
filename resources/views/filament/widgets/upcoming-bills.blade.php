@@ -34,9 +34,9 @@
                             <p class="truncate text-sm font-medium text-zinc-950 dark:text-white">{{ $name }}</p>
                             <p @class(['text-xs', 'font-medium text-danger-600 dark:text-danger-400' => $overdue, 'text-zinc-500 dark:text-zinc-400' => ! $overdue])>
                                 @if ($overdue)
-                                    {{ __('Overdue since :date', ['date' => $bill->due_date->translatedFormat('j M')]) }}
+                                    {{ __('Overdue since :date', ['date' => $bill->due_date->format(\App\Support\DateFormat::DATE)]) }}
                                 @elseif ($bill->due_date)
-                                    {{ __('Pay by :date', ['date' => $bill->due_date->translatedFormat('j M')]) }}
+                                    {{ __('Pay by :date', ['date' => $bill->due_date->format(\App\Support\DateFormat::DATE)]) }}
                                 @else
                                     {{ $bill->category?->name }}
                                 @endif

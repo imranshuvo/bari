@@ -8,16 +8,24 @@ use App\Filament\Concerns\UsesCurrentProject;
 use App\Filament\Resources\Costs\Pages\ManageCosts;
 use App\Filament\Resources\Costs\Schemas\CostForm;
 use App\Models\Cost;
+use App\Support\DateFormat;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
 
 class CostResource extends Resource
@@ -91,7 +99,11 @@ class CostResource extends Resource
                     ->label(__('Agreement'))
                     ->options(fn () => static::project()->agreements()->orderBy('title')->pluck('title', 'id'))
                     ->searchable(),
-            ])
+                static::dateRangeFilter(),
+            ], layout: FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(['default' => 1, 'sm' => 2, 'lg' => 4])
+            ->deferFilters(false)
+            ->filtersTriggerAction(fn (Action $action) => $action->button()->outlined()->label(__('Filter')))
             ->recordActions([
                 CostActions::markPaid(),
                 CostActions::view(),
@@ -103,6 +115,35 @@ class CostResource extends Resource
             ->emptyStateDescription(__('Add every bill and receipt, and the app keeps the totals for you.'))
             ->striped()
             ->paginated([25, 50, 100]);
+    }
+
+    /** "From – until" on the bill date; the total at the bottom follows it. */
+    private static function dateRangeFilter(): Filter
+    {
+        return Filter::make('date')
+            ->schema([
+                Grid::make(['default' => 2])->schema([
+                    DatePicker::make('from')->label(__('From')),
+                    DatePicker::make('until')->label(__('Until')),
+                ]),
+            ])
+            ->columnSpan(['default' => 1, 'sm' => 2, 'lg' => 1])
+            ->query(fn (Builder $query, array $data) => $query
+                ->when($data['from'] ?? null, fn (Builder $q, string $date) => $q->whereDate('date', '>=', $date))
+                ->when($data['until'] ?? null, fn (Builder $q, string $date) => $q->whereDate('date', '<=', $date)))
+            ->indicateUsing(function (array $data): array {
+                $indicators = [];
+
+                if ($data['from'] ?? null) {
+                    $indicators[] = Indicator::make(__('From :date', ['date' => Carbon::parse($data['from'])->format(DateFormat::DATE)]))->removeField('from');
+                }
+
+                if ($data['until'] ?? null) {
+                    $indicators[] = Indicator::make(__('Until :date', ['date' => Carbon::parse($data['until'])->format(DateFormat::DATE)]))->removeField('until');
+                }
+
+                return $indicators;
+            });
     }
 
     /** Columns shared with the dashboard's "bills to pay" list. */
@@ -130,7 +171,7 @@ class CostResource extends Resource
         return [
             TextColumn::make('date')
                 ->label(__('Date'))
-                ->date('j M Y')
+                ->date()
                 ->sortable()
                 ->visibleFrom('md'),
             TextColumn::make('supplier.name')
@@ -161,7 +202,7 @@ class CostResource extends Resource
                     default => 'warning',
                 })
                 ->description(fn (Cost $record) => ! $record->is_paid && $record->due_date
-                    ? __('Pay by :date', ['date' => $record->due_date->translatedFormat('j M')])
+                    ? __('Pay by :date', ['date' => $record->due_date->format(DateFormat::DATE)])
                     : null),
             TextColumn::make('files')
                 ->label('')
@@ -185,7 +226,7 @@ class CostResource extends Resource
     /** The note under the supplier name; on phones it also carries the date and category, whose columns are hidden there. */
     protected static function supplierDescription(Cost $record): ?HtmlString
     {
-        $mobile = collect([$record->date?->translatedFormat('j M Y'), $record->category?->name])->filter()->implode(' · ');
+        $mobile = collect([$record->date?->format(DateFormat::DATE), $record->category?->name])->filter()->implode(' · ');
         $html = '';
 
         if (filled($record->description)) {

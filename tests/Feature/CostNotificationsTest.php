@@ -127,7 +127,7 @@ class CostNotificationsTest extends TestCase
         $text = $message->toWhatsApp(new AnonymousNotifiable);
         $this->assertStringContainsString('Rahim changed a cost', $text);
         $this->assertStringContainsString('Amount: ৳20,000 → ৳25,000', $text);
-        $this->assertStringContainsString('Pay by 1 Dec 2026', $text);
+        $this->assertStringContainsString('Pay by 01-12-2026', $text);
     }
 
     public function test_marking_paid_and_deleting_send_their_own_message(): void

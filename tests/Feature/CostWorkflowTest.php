@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ProjectRole;
+use App\Filament\Forms\SupplierSelect;
 use App\Filament\Pages\Tenancy\RegisterProject;
 use App\Filament\Resources\Categories\Pages\ManageCategories;
 use App\Filament\Resources\Costs\Pages\ManageCosts;
@@ -87,6 +88,51 @@ class CostWorkflowTest extends TestCase
 
         $this->assertSame(1, Supplier::count());
         $this->assertSame($existing->id, Cost::sole()->supplier_id);
+    }
+
+    public function test_paid_to_lists_only_this_projects_suppliers_and_offers_to_add_a_new_name(): void
+    {
+        Supplier::factory()->for(Project::factory())->create(['name' => 'Karim Steel']);
+        $this->as(ProjectRole::Editor);
+        Supplier::factory()->for($this->project)->create(['name' => 'Karim Construction']);
+
+        $this->assertSame(['Karim Construction' => 'Karim Construction'], SupplierSelect::searchResults(''));
+        $this->assertSame(['Karim Construction' => 'Karim Construction'], SupplierSelect::searchResults('karim construction'));
+        $this->assertSame(
+            ['Karim Steel' => 'Add “Karim Steel”'],
+            SupplierSelect::searchResults('  Karim   Steel '),
+        );
+    }
+
+    public function test_spending_can_be_filtered_by_supplier_category_and_date_range(): void
+    {
+        $this->as(ProjectRole::Viewer);
+        $roof = Category::factory()->for($this->project)->create(['name' => 'Roof']);
+        $karim = Supplier::factory()->for($this->project)->create(['name' => 'Karim Construction']);
+        $october = Cost::factory()->for($this->project)->create(['date' => '2026-10-05', 'category_id' => $this->category->id, 'supplier_id' => $karim->id]);
+        $november = Cost::factory()->for($this->project)->create(['date' => '2026-11-05', 'category_id' => $this->category->id]);
+        $roofCost = Cost::factory()->for($this->project)->create(['date' => '2026-11-06', 'category_id' => $roof->id]);
+
+        Livewire::test(ManageCosts::class)
+            ->filterTable('supplier_id', $karim->id)
+            ->assertCanSeeTableRecords([$october])
+            ->assertCanNotSeeTableRecords([$november, $roofCost])
+            ->resetTableFilters()
+            ->filterTable('category_id', $roof->id)
+            ->assertCanSeeTableRecords([$roofCost])
+            ->assertCanNotSeeTableRecords([$october, $november])
+            ->resetTableFilters()
+            ->filterTable('date', ['from' => '2026-11-01', 'until' => '2026-11-05'])
+            ->assertCanSeeTableRecords([$november])
+            ->assertCanNotSeeTableRecords([$october, $roofCost]);
+    }
+
+    public function test_dates_are_shown_day_first(): void
+    {
+        $this->as(ProjectRole::Owner);
+        Cost::factory()->for($this->project)->create(['date' => '2026-03-07', 'category_id' => $this->category->id]);
+
+        Livewire::test(ManageCosts::class)->assertSeeText('07-03-2026');
     }
 
     public function test_an_unpaid_bill_needs_no_paid_date_and_can_be_marked_paid(): void
